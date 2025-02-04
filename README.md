@@ -30,6 +30,15 @@ if ! [[ -d $HOME/.config/nvim ]]; then git clone git@github.com:overtfuture/lazy
 
 # Custom binaries
 if ! [[ -d $HOME/.bin ]]; then ln -s $DOTFILE_DIR/.bin $HOME/.bin; fi
+
+# Reload config
+exec zsh
+
+# Setup dependencies (macOS only)
+setup-dependencies
+
+# Setup ~/.gitconfig
+setup-gitconfig
 ```
 
 But it's not DRY... that's okay, it's explicit 🍻
