@@ -1,0 +1,5 @@
+# Orbstack
+if [ -x "$(command -v orb)" ]; then
+  eval "$(orbctl completion zsh)"
+  source $HOME/.orbstack/shell/init.zsh
+fi
