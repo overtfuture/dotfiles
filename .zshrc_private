@@ -1,0 +1,30 @@
+# This file is more personalized, but feel free to use
+
+# Theme
+ZSH_THEME="dracula-pro"
+
+# iTerm
+test -e "$HOME/.iterm2_shell_integration.zsh" && source $HOME/.iterm2_shell_integration.zsh
+
+# iOS Shellfish
+test -e "$HOME/.shellfishrc" && source "$HOME/.shellfishrc"
+
+# User placed binaries
+export PATH=$PATH:$HOME/.bin
+export PATH=$PATH:$HOME/.local/bin
+
+# usr/local/bin
+export PATH=$PATH:/usr/local/bin
+
+# SSH
+if [[ `uname` == "Linux" ]]; then
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+fi
+
+# Starship terminal
+if [ -x "$(command -v starship)" ]; then
+  # Starship
+  export STARSHIP_CONFIG=$HOME/.config/starship/config.toml
+  eval "$(starship init zsh)"
+fi

@@ -1,0 +1,9 @@
+# Editor
+if ! [ -x "$(command -v nvim)" ]; then
+  echo 'Error: neovim is not installed. Defaulting to vim' >&2
+  export EDITOR='vim'
+else
+  export EDITOR='nvim'
+  alias vi="nvim"
+  alias vim="nvim"
+fi

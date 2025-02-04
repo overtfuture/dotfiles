@@ -1,0 +1,6 @@
+# Postgres
+
+# Neon DB neonctl
+if [ -x "$(command -v neonctl)" ]; then
+  source <(neonctl completion)
+fi

@@ -1,0 +1,9 @@
+# Kubernetes
+source <(kubectl completion zsh)
+# krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+# kubie
+if [ -f $HOME/.kube/kubie.zsh ]; then
+  source $HOME/.kube/kubie.zsh
+fi

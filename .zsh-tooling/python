@@ -1,0 +1,4 @@
+# Python - Rye Management
+if [ -x "$(command -v rye)" ]; then
+    source "$HOME/.rye/env"
+fi
