@@ -12,6 +12,11 @@ test -e "$HOME/.shellfishrc" && source "$HOME/.shellfishrc"
 # User placed binaries
 export PATH=$PATH:$HOME/.bin
 export PATH=$PATH:$HOME/.local/bin
+if [[ `uname` == "Linux" ]]; then
+  export PATH=$PATH:$HOME/.bin/linux
+elif [[ `uname` == "Darwin" ]]; then
+  export PATH=$PATH:$HOME/.bin/macos
+fi
 
 # usr/local/bin
 export PATH=$PATH:/usr/local/bin

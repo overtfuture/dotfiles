@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Function to rsync directories
+rsync_directories() {
+    source_path=$1
+    destination_path=$2
+
+    mkdir -p "$destination_path" && rsync -avz --exclude-from="$HOME/.gitignore_global" --progress --delete "$source_path" "$destination_path"
+}
+
+# Check if the volume "Secure" is mounted
+if mount | grep -q "/Volumes/Secure"; then
+    echo "USB flash drive 'Secure' is mounted."
+    echo "Syncing files..."
+    
+    # Sync Development folder to flash drive
+    rsync_directories "$HOME/Developer/projects/" "/Volumes/Secure/Nate/Developer/projects"
+
+    # Sync $HOME folders to flash drive
+    rsync_directories "$HOME/.ssh/" "/Volumes/Secure/Nate/.ssh"
+else
+    echo "Volume 'Secure' is not mounted."
+fi

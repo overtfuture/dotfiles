@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# brew setup
+if [ -x "$(command -v brew)" ]; then
+  brew install zsh chroma git fzf neovim starship neonctl kubectl helm minikube kubie bat eza zsh-autosuggestions zsh-syntax-highlighting
+else
+  # https://brew.sh
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" 
+fi
+
+# zsh-autosuggestions
+if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
+  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
+fi
+
+# authorized_keys
+if [ ! -f "$HOME/.ssh/authorized_keys" ]; then
+  mkdir -p $HOME/.ssh && curl https://github.com/overtfuture.keys > $HOME/.ssh/authorized_keys && echo "Authorized Keys Set Up" && cat $HOME/.ssh/authorized_keys
+fi

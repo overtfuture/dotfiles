@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Check if pandoc is installed
+if ! command -v pandoc &>/dev/null; then
+	echo "Pandoc is not installed. Please install it first."
+	exit 1
+fi
+
+# Get the clipboard content
+clipboard_content=$(pbpaste)
+
+# Convert the clipboard content from Markdown to HTML using Pandoc
+html_content=$(echo "$clipboard_content" | pandoc -f markdown -t html)
+
+# Escape double quotes in the HTML content
+escaped_html_content=$(echo "$html_content" | sed 's/"/\\"/g')
+
+# Create an AppleScript to add the HTML content to a new note
+osascript <<EOF
+tell application "Notes"
+    tell account "iCloud" -- Change this to the desired account if needed
+        make new note at folder "Notes" with properties {name:"Imported Note", body:"$escaped_html_content"}
+    end tell
+end tell
+EOF
+
+echo "Markdown content from clipboard has been converted and added to a new Apple Note."

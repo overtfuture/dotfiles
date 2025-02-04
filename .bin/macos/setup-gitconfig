@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# This script sets up your global gitconfig on macOS using your SSH key for commit signing.
+# It will prompt you to enter your name and email, then use your SSH key (id_ed25519 or id_rsa)
+# for signing commits. Make sure you have at least one SSH key in ~/.ssh.
+#
+
+# Prompt for user name and email
+read -rp "Enter your name: " user_name
+read -rp "Enter your email: " user_email
+
+# Choose an SSH key
+SSH_KEY=""
+PUB_KEY=""
+if [ -f "$HOME/.ssh/id_ed25519" ] && [ -f "$HOME/.ssh/id_ed25519.pub" ]; then
+  SSH_KEY="$HOME/.ssh/id_ed25519"
+  PUB_KEY="$HOME/.ssh/id_ed25519.pub"
+elif [ -f "$HOME/.ssh/id_rsa" ] && [ -f "$HOME/.ssh/id_rsa.pub" ]; then
+  SSH_KEY="$HOME/.ssh/id_rsa"
+  PUB_KEY="$HOME/.ssh/id_rsa.pub"
+else
+  echo "No suitable SSH key found in ~/.ssh. Please generate one (e.g., ssh-keygen -t ed25519)."
+  exit 1
+fi
+
+# Read the public key content (trim whitespace)
+pubkey_content=$(<"$PUB_KEY")
+if [ -z "$pubkey_content" ]; then
+  echo "Could not read the public key from $PUB_KEY"
+  exit 1
+fi
+
+# Configure git with the provided details and SSH key for signing
+git config --global user.name "$user_name"
+git config --global user.email "$user_email"
+
+# Enable SSH signing: set the gpg format to 'ssh' and use the public key as the signing key.
+git config --global gpg.format ssh
+git config --global user.signingkey "$pubkey_content"
+git config --global commit.gpgsign true
+
+# Sane defaults
+git config --global push.default matching
+git config --global pull.rebase false
+git config --global color.branch true
+git config --global color.ui true
+git config --global color.status true
+git config --global color.interactive true
+git config --global color.diff true
+git config --global color.pager true
+
+if [ "$(uname)" = "Darwin" ]; then
+  # Enable Git credential helper to use macOS Keychain
+  git config --global credential.helper osxkeychain
+fi
+
+echo "Git configuration updated:"
+echo "  user.name = $user_name"
+echo "  user.email = $user_email"
+echo "  Signing with SSH public key from $PUB_KEY"
+
+cat ~/.gitconfig

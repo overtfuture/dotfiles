@@ -7,6 +7,7 @@ ZSH_THEME="imajes"
 plugins=(
   1password
   brew
+  colorize
   docker
   fnm
   fzf
@@ -23,6 +24,11 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 ZSH_DISABLE_COMPFIX=true
+
+# zsh colorize
+ZSH_COLORIZE_TOOL=chroma
+ZSH_COLORIZE_STYLE="colorful"
+ZSH_COLORIZE_CHROMA_FORMATTER=true-color
 
 # zsh-completions
 fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
