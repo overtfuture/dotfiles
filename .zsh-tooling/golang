@@ -1,6 +1,5 @@
 # GoLang
 if [ -x "$(command -v go)" ]; then
-  echo 'Go is installed'
   # OS Detection
   if [[ `uname` == "Linux" ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

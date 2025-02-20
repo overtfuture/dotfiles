@@ -40,7 +40,8 @@ git config --global user.signingkey "$pubkey_content"
 git config --global commit.gpgsign true
 
 # Sane defaults
-git config --global push.default matching
+git config --global push.default simple
+git config --global push.autoSetupRemote true
 git config --global pull.rebase false
 git config --global color.branch true
 git config --global color.ui true
@@ -60,3 +61,4 @@ echo "  user.email = $user_email"
 echo "  Signing with SSH public key from $PUB_KEY"
 
 cat ~/.gitconfig
+
