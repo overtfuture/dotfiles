@@ -5,7 +5,7 @@
 Clone, cd, symlink
 
 ```shell
-git clone git@github.com:overtfuture/dotfiles.git
+git clone https://github.com/overtfuture/dotfiles.git
 
 cd dotfiles && DOTFILE_DIR=$(pwd) && cd
 
@@ -23,10 +23,10 @@ ln -s $DOTFILE_DIR/.zsh-tooling $HOME/.zsh-tooling
 
 # More specific configs
 ln -s $DOTFILE_DIR/.zshrc_private $HOME/.zshrc_private
-ln -s $DOTFILE_DIR/.config/starship $HOME/.config/starship
+mkdir -p $HOME/.config && ln -s $DOTFILE_DIR/.config/starship $HOME/.config/starship
 
 # Clone and setup Neovim config
-if ! [[ -d $HOME/.config/nvim ]]; then git clone git@github.com:overtfuture/lazyvim.git $HOME/.config/nvim; fi
+if ! [[ -d $HOME/.config/nvim ]]; then git clone https://github.com/overtfuture/lazyvim.git $HOME/.config/nvim; fi
 
 # Custom binaries
 if ! [[ -d $HOME/.bin ]]; then ln -s $DOTFILE_DIR/.bin $HOME/.bin; fi
