@@ -1,20 +1,34 @@
 #!/bin/bash
 
 # brew setup
-if [ ! -x "$(command -v brew)" ]; then
-  # https://brew.sh
+read -p "Homebrew is not installed. Would you like to install it? [y/N]: " install_brew
+if [[ "$install_brew" =~ ^[Yy]$ ]]; then
+  echo "Installing Homebrew will allow us to manage and install essential development tools."
+  echo "You may be prompted for your password—this is required to install Homebrew and its packages system-wide."
+
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   eval "$(/opt/homebrew/bin/brew shellenv)"
+  USE_HOMEBREW=true
+else
+  echo "Skipping Homebrew installation."
+  USE_HOMEBREW=false
 fi
 
 # brew packages
-if [ -x "$(command -v brew)" ]; then
+if [ "$USE_HOMEBREW" = true ] || [ -x "$(command -v brew)" ]; then
   brew install zsh chroma git fzf neovim starship neonctl kubectl helm minikube kubie bat eza zsh-autosuggestions zsh-syntax-highlighting
 fi
 
 # authorized_keys
-if [ ! -f "$HOME/.ssh/authorized_keys" ]; then
-  mkdir -p $HOME/.ssh && curl https://github.com/overtfuture.keys > $HOME/.ssh/authorized_keys && echo "Authorized Keys Set Up" && cat $HOME/.ssh/authorized_keys
+read -p "Would you like to set up authorized keys? [y/N]: " setup_keys
+if [[ "$setup_keys" =~ ^[Yy]$ ]]; then
+  read -p "Enter your GitHub username to fetch authorized keys: " github_username
+  if [ ! -f "$HOME/.ssh/authorized_keys" ]; then
+    mkdir -p "$HOME/.ssh"
+    curl "https://github.com/${github_username}.keys" > "$HOME/.ssh/authorized_keys"
+    echo "Authorized Keys Set Up"
+    cat "$HOME/.ssh/authorized_keys"
+  fi
 fi
 
 # oh-my-zsh
