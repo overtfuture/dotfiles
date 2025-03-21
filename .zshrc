@@ -15,7 +15,6 @@ plugins=(
   golang
   kubectl
   vi-mode
-  zsh-autosuggestions
   zsh-interactive-cd
   zsh-navigation-tools
 )
@@ -31,7 +30,7 @@ ZSH_COLORIZE_STYLE="colorful"
 ZSH_COLORIZE_CHROMA_FORMATTER=true-color
 
 # zsh-completions
-fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # ZSH Highlighting
 if [[ `uname` == "Linux" ]]; then
