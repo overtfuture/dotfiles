@@ -8,12 +8,6 @@ else
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# oh-my-zsh
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" 
-fi
-
 # zsh-autosuggestions
 if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
   git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
@@ -22,4 +16,18 @@ fi
 # authorized_keys
 if [ ! -f "$HOME/.ssh/authorized_keys" ]; then
   mkdir -p $HOME/.ssh && curl https://github.com/overtfuture.keys > $HOME/.ssh/authorized_keys && echo "Authorized Keys Set Up" && cat $HOME/.ssh/authorized_keys
+fi
+
+# oh-my-zsh
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
+
+  if [ ! -f "$HOME/.zshrc" ]; then
+    cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+  fi
+
+  chsh -s $(which zsh)
+  echo "Oh My Zsh installed and set as default shell"
+  echo ""
+  echo "Please restart your terminal or run 'exec zsh' to apply changes."
 fi
