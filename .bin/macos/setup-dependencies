@@ -16,7 +16,7 @@ fi
 
 # brew packages
 if [ "$USE_HOMEBREW" = true ] || [ -x "$(command -v brew)" ]; then
-  brew install zsh chroma git fzf neovim starship neonctl kubectl helm minikube kubie bat eza zsh-autosuggestions zsh-syntax-highlighting
+  brew install zsh chroma git fzf neovim starship neonctl kubectl helm minikube kubie bat eza zsh-syntax-highlighting
 fi
 
 # authorized_keys
@@ -39,12 +39,12 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
   fi
 
-  echo "Please restart your terminal or run 'exec zsh' to apply changes."
-fi
+  # zsh-autosuggestions
+  if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
+    git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
+  else
+    echo "zsh-autosuggestions plugin already installed."
+  fi
 
-# zsh-autosuggestions
-if [ ! -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
-else
-  echo "zsh-autosuggestions plugin already installed."
+  echo "Please restart your terminal or run 'exec zsh' to apply changes."
 fi
