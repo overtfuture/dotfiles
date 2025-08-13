@@ -16,4 +16,6 @@ if [ -x "$(command -v go)" ]; then
   export PATH=$PATH:$GOPATH
   export PATH=$PATH:$GOROOT/bin
   export PATH=$GOBIN:$PATH
+
+  export GOPROXY=direct
 fi

@@ -70,10 +70,6 @@ if [ -x "$(command -v fzf)" ]; then
   # Set fzf theme to dracula and show file previews
   export FZF_DEFAULT_OPTS='
     --height 100% --layout=reverse
-    --color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9
-    --color=fg+:#50fa7b,bg+:#44475a,hl+:#ff79c6
-    --color=info:#8be9fd,prompt:#ffb86c,pointer:#ff5555
-    --color=marker:#ff79c6,spinner:#6272a4,header:#bd93f9
     --preview "[ -f $(echo {} | awk '\''{print $NF}'\'') ] && bat --color=always --style=numbers $(echo {} | awk '\''{print $NF}'\'') || echo {}"
     --preview-window=up:2:wrap
   '

@@ -7,3 +7,8 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 if [ -f $HOME/.kube/kubie.zsh ]; then
   source $HOME/.kube/kubie.zsh
 fi
+
+# telepresence
+if [ -x "$(command -v telepresence)" ]; then
+  source <(telepresence completion zsh)
+fi

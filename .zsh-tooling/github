@@ -1,0 +1,5 @@
+# Github CLI
+if [ -x "$(command -v gh)" ]; then
+  source <(gh completion -s zsh)
+fi
+

@@ -21,23 +21,26 @@ echo "When using remote SSH and forwarding a local SSH agent, the local SSH key 
 echo "This will curl your existing Github public keys to allow for git signing"
 read -p "Would you like to curl your Github public keys as allowed git commit signing keys? [y/N]: " setup_signing_keys
 if [[ "$setup_signing_keys" =~ ^[Yy]$ ]]; then
-  read -p "Enter your GitHub username: " github_username
-  if [ ! -f "$HOME/.ssh/allowed_signers" ]; then
-    mkdir -p "$HOME/.ssh"
-    curl "https://github.com/${github_username}.keys" > "$HOME/.ssh/allowed_signers"
-    echo "Authorized Signing Keys Added"
-    cat "$HOME/.ssh/allowed_signers"
-    echo "Adding gpg signing with SSH keys"
-    git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
-    git config --global gpg.ssh.allowedSignersFile '$HOME/.ssh/allowed_signers'
-    git config --global commit.gpgsign true
-  fi
+	read -p "Enter your GitHub username: " github_username
+	if [ ! -f "$HOME/.ssh/allowed_signers" ]; then
+		mkdir -p "$HOME/.ssh"
+		curl "https://github.com/${github_username}.keys" >"$HOME/.ssh/allowed_signers"
+		echo "Authorized Signing Keys Added"
+		cat "$HOME/.ssh/allowed_signers"
+		echo "Adding gpg signing with SSH keys"
+		git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
+		git config --global gpg.ssh.allowedSignersFile '$HOME/.ssh/allowed_signers'
+		git config --global commit.gpgsign true
+	fi
 fi
 
 # Sane defaults
 git config --global push.default simple
 git config --global push.autoSetupRemote true
 git config --global pull.rebase false
+git config --global init.defaultBranch main
+# Always use ssh
+git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
 git config --global color.branch true
 git config --global color.ui true
 git config --global color.status true
@@ -46,8 +49,8 @@ git config --global color.diff true
 git config --global color.pager true
 
 if [ "$(uname)" = "Darwin" ]; then
-  # Enable Git credential helper to use macOS Keychain
-  git config --global credential.helper osxkeychain
+	# Enable Git credential helper to use macOS Keychain
+	git config --global credential.helper osxkeychain
 fi
 
 echo "Git configuration updated:"
