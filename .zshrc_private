@@ -27,10 +27,6 @@ if [[ `uname` == "Linux" ]]; then
     ssh-add ~/.ssh/id_ed25519
 fi
 
-# GoLang Private Modules
-export GOPRIVATE=github.com/studioember/*
-export GONOSUMDB=github.com/studioember/*
-
 # Starship terminal
 if [ -x "$(command -v starship)" ]; then
   # Starship

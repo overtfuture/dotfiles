@@ -11,6 +11,7 @@ cd dotfiles && DOTFILE_DIR=$(pwd) && cd
 
 ln -s $DOTFILE_DIR/.zprofile $HOME/.zprofile
 ln -s $DOTFILE_DIR/.zshrc $HOME/.zshrc
+ln -s $DOTFILE_DIR/.gitignore_global $HOME/.gitignore_global
 
 # Language specific files / other tools
 
@@ -30,6 +31,10 @@ if ! [[ -d $HOME/.config/nvim ]]; then git clone https://github.com/overtfuture/
 
 # Custom binaries
 if ! [[ -d $HOME/.bin ]]; then ln -s $DOTFILE_DIR/.bin $HOME/.bin; fi
+
+# OpenSSH Config
+sudo mv $DOTFILE_DIR/001-ssh-macos-security.conf /etc/ssh/sshd_config.d/
+sudo mv $DOTFILE_DIR/100-macos.conf /etc/ssh/sshd_config.d/
 
 # Reload config
 exec zsh

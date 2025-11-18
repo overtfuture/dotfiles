@@ -18,4 +18,8 @@ if [ -x "$(command -v go)" ]; then
   export PATH=$GOBIN:$PATH
 
   export GOPROXY=direct
+
+  # GoLang Private Modules
+  export GOPRIVATE=github.com/studioember/*
+  export GONOSUMDB=github.com/studioember/*
 fi

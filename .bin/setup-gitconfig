@@ -53,6 +53,10 @@ if [ "$(uname)" = "Darwin" ]; then
 	git config --global credential.helper osxkeychain
 fi
 
+if [ -f "$HOME/.gitignore_global" ]; then
+	git config --global core.excludesfile ~/.gitignore_global
+fi
+
 echo "Git configuration updated:"
 echo "  user.name = $user_name"
 echo "  user.email = $user_email"

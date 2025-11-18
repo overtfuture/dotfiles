@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Connects to Blaustahl Storage Device
+# See https://github.com/machdyne/blaustahl
+
+ls /dev/tty.usbmodem* && screen /dev/tty.usbmodem1234561
