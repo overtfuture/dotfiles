@@ -99,3 +99,8 @@ fi
 if [ -f ~/.zshrc_private ]; then
   source ~/.zshrc_private
 fi
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/Nate/.lmstudio/bin"
+# End of LM Studio CLI section
+
