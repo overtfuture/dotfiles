@@ -1,0 +1,5 @@
+# Neovim
+if [ -x "$(command -v nvim)" ]; then
+  export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+fi
+

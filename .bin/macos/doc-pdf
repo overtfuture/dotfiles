@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage: docx2pdf file.docx [another.docx ...]
+for f in "$@"; do
+	[[ -f "$f" ]] || {
+		echo "Not a file: $f" >&2
+		continue
+	}
+	out="${f%.*}.pdf"
+	pandoc "$f" -o "$out"
+	echo "Wrote: $out"
+done
