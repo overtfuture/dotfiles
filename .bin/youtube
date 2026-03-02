@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+err() {
+	echo "error: $*" >&2
+	exit 1
+}
+
+need_cmd() {
+	command -v "$1" >/dev/null 2>&1 || err "missing dependency: $1 (install it first)"
+}
+
+need_cmd yt-dlp
+need_cmd ffmpeg
+
+if [[ $# -lt 1 ]]; then
+	err "usage: $(basename "$0") <video-url>"
+fi
+
+URL="$1"
+
+yt-dlp \
+	"$URL" \
+	-f "bv*+ba/b" \
+	--merge-output-format mp4 \
+	--embed-metadata \
+	--embed-thumbnail \
+	--add-metadata \
+	--sleep-interval 1 \
+	--max-sleep-interval 5 \
+	--geo-bypass \
+	--write-info-json \
+	--write-description \
+	--write-thumbnail \
+	--restrict-filenames \
+	--no-mtime \
+	-o "%(title)s.%(ext)s"
