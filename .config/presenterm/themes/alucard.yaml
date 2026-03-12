@@ -1,0 +1,147 @@
+---
+default:
+  margin:
+    percent: 8
+  colors:
+    foreground: palette:foreground
+    background: palette:background
+
+intro_slide:
+  title:
+    alignment: center
+    positioning: page_top
+    colors:
+      foreground: palette:purple
+    font_size: 2
+  subtitle:
+    alignment: center
+    colors:
+      foreground: palette:green
+  event:
+    alignment: center
+    colors:
+      foreground: palette:pink
+  location:
+    alignment: center
+  date:
+    alignment: center
+  author:
+    alignment: center
+    colors:
+      foreground: palette:cyan
+    positioning: page_bottom
+  footer: false
+
+footer:
+  style: template
+  right: "<span style='color: palette:selection'>{current_slide} / {total_slides}</span>"
+  left: "<span style='color: palette:selection'>{title} : {author}</span>"
+
+slide_title:
+  alignment: center
+  padding_top: 1
+  padding_bottom: 1
+  colors:
+    foreground: palette:purple
+  bold: true
+  font_size: 2
+
+headings:
+  h1:
+    colors:
+      foreground: palette:yellow
+    prefix: "█"
+  h2:
+    colors:
+      foreground: palette:cyan
+    prefix: "██"
+  h3:
+    colors:
+      foreground: palette:green
+    prefix: "███"
+  h4:
+    colors:
+      foreground: palette:pink
+    prefix: "████"
+  h5:
+    colors:
+      foreground: palette:orange
+    prefix: "█████"
+  h6:
+    colors:
+      foreground: palette:foreground
+    prefix: "██████"
+
+block_quote:
+  prefix: "▍ "
+  colors:
+    foreground: palette:foreground
+    prefix: palette:selection
+
+alert:
+  prefix: "▍ "
+  base_colors:
+    foreground: palette:foreground
+    background: palette:background
+  styles:
+    note:
+      color: palette:cyan
+    tip:
+      color: palette:purple
+    important:
+      color: palette:pink
+    warning:
+      color: palette:orange
+    caution:
+      color: palette:red
+
+inline_code:
+  colors:
+    foreground: palette:comment
+
+code:
+  alignment: center
+  theme_name: dracula
+  minimum_size: 80
+  minimum_margin:
+    percent: 8
+  padding:
+    horizontal: 2
+    vertical: 1
+
+typst:
+  colors:
+    foreground: palette:foreground
+    background: palette:background
+
+execution_output:
+  colors:
+    foreground: palette:foreground
+    background: palette:background
+  status:
+    running:
+      foreground: palette:cyan
+    success:
+      foreground: palette:green
+    failure:
+      foreground: palette:red
+    not_started:
+      foreground: palette:yellow
+  padding:
+    horizontal: 2
+    vertical: 1
+
+palette:
+  colors:
+    background: "fffbeb"
+    comment: "6c664b"
+    currentLine: "6c664b"
+    cyan: "036a96"
+    foreground: "1f1f1f"
+    green: "14710a"
+    orange: "a34d14"
+    pink: "a3144d"
+    purple: "644ac9"
+    red: "cb3a2a"
+    selection: "cfcfde"
+    yellow: "846e15"
