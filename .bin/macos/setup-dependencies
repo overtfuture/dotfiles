@@ -1,21 +1,26 @@
 #!/bin/bash
 
 # brew setup
-read -p "Homebrew is not installed. Would you like to install it? [y/N]: " install_brew
-if [[ "$install_brew" =~ ^[Yy]$ ]]; then
-  echo "Installing Homebrew will allow us to manage and install essential development tools."
-  echo "You may be prompted for your password—this is required to install Homebrew and its packages system-wide."
-
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+if [ -x "$(command -v brew)" ]; then
+  echo "Homebrew already installed — skipping install."
   USE_HOMEBREW=true
 else
-  echo "Skipping Homebrew installation."
-  USE_HOMEBREW=false
+  read -p "Homebrew is not installed. Would you like to install it? [y/N]: " install_brew
+  if [[ "$install_brew" =~ ^[Yy]$ ]]; then
+    echo "Installing Homebrew will allow us to manage and install essential development tools."
+    echo "You may be prompted for your password—this is required to install Homebrew and its packages system-wide."
+
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    USE_HOMEBREW=true
+  else
+    echo "Skipping Homebrew installation."
+    USE_HOMEBREW=false
+  fi
 fi
 
 # brew packages
-if [ "$USE_HOMEBREW" = true ] || [ -x "$(command -v brew)" ]; then
+if [ "$USE_HOMEBREW" = true ]; then
   brew install zsh chroma git fzf neovim starship neonctl kubectl helm minikube kubie bat eza zsh-autosuggestions zsh-syntax-highlighting
 fi
 
