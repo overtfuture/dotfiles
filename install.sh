@@ -12,11 +12,11 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-info()    { echo -e "  ${CYAN}${1}${NC}"; }
+info() { echo -e "  ${CYAN}${1}${NC}"; }
 success() { echo -e "  ${GREEN}✓ ${1}${NC}"; }
-warn()    { echo -e "  ${YELLOW}⚠ ${1}${NC}"; }
-error()   { echo -e "  ${RED}✗ ${1}${NC}"; }
-header()  { echo -e "\n${BOLD}${1}${NC}"; }
+warn() { echo -e "  ${YELLOW}⚠ ${1}${NC}"; }
+error() { echo -e "  ${RED}✗ ${1}${NC}"; }
+header() { echo -e "\n${BOLD}${1}${NC}"; }
 
 is_macos() { [[ "$(uname)" == "Darwin" ]]; }
 
@@ -56,15 +56,16 @@ symlink() {
 setup_symlinks() {
   header "Setting up symlinks"
 
-  symlink "$DOTFILE_DIR/.zprofile"         "$HOME/.zprofile"
-  symlink "$DOTFILE_DIR/.zshrc"            "$HOME/.zshrc"
+  symlink "$DOTFILE_DIR/.zprofile" "$HOME/.zprofile"
+  symlink "$DOTFILE_DIR/.zshrc" "$HOME/.zshrc"
+  symlink "$DOTFILE_DIR/.tmux.conf" "$HOME/.tmux.conf"
   symlink "$DOTFILE_DIR/.gitignore_global" "$HOME/.gitignore_global"
-  symlink "$DOTFILE_DIR/.zshrc_private"    "$HOME/.zshrc_private"
-  symlink "$DOTFILE_DIR/.bin"              "$HOME/.bin"
+  symlink "$DOTFILE_DIR/.zshrc_private" "$HOME/.zshrc_private"
+  symlink "$DOTFILE_DIR/.bin" "$HOME/.bin"
 
   mkdir -p "$HOME/.config"
-  symlink "$DOTFILE_DIR/.config/starship"    "$HOME/.config/starship"
-  symlink "$DOTFILE_DIR/.config/presenterm"  "$HOME/.config/presenterm"
+  symlink "$DOTFILE_DIR/.config/starship" "$HOME/.config/starship"
+  symlink "$DOTFILE_DIR/.config/presenterm" "$HOME/.config/presenterm"
 
   setup_zsh_tooling
   setup_neovim
@@ -91,7 +92,7 @@ setup_zsh_tooling() {
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
       status=" ${GREEN}[✓]${NC}"
     fi
-    printf "  %2d) %s%b\n" "$((i+1))" "$tool" "$status"
+    printf "  %2d) %s%b\n" "$((i + 1))" "$tool" "$status"
   done
 
   echo
@@ -196,20 +197,23 @@ main() {
     print_menu
     read -r -p "Choice: " choice
     case "$choice" in
-      1)
-        setup_symlinks
-        setup_dependencies
-        setup_gitconfig
-        setup_ssh
-        echo -e "\n${GREEN}${BOLD}Done! Run 'exec zsh' to reload your shell.${NC}\n"
-        break
-        ;;
-      2) setup_symlinks ;;
-      3) setup_dependencies ;;
-      4) setup_gitconfig ;;
-      5) setup_ssh ;;
-      6) echo; exit 0 ;;
-      *) error "Invalid choice: $choice" ;;
+    1)
+      setup_symlinks
+      setup_dependencies
+      setup_gitconfig
+      setup_ssh
+      echo -e "\n${GREEN}${BOLD}Done! Run 'exec zsh' to reload your shell.${NC}\n"
+      break
+      ;;
+    2) setup_symlinks ;;
+    3) setup_dependencies ;;
+    4) setup_gitconfig ;;
+    5) setup_ssh ;;
+    6)
+      echo
+      exit 0
+      ;;
+    *) error "Invalid choice: $choice" ;;
     esac
   done
 }
