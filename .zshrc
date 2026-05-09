@@ -33,13 +33,7 @@ ZSH_COLORIZE_CHROMA_FORMATTER=true-color
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # ZSH Highlighting
-if [[ `uname` == "Linux" ]]; then
-  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-elif [[ `uname` == "Darwin" ]]; then
-  source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-else
-  echo 'Unknown OS!'
-fi
+source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Basic Aliases
 alias c="clear"
@@ -64,7 +58,7 @@ if [ -x "$(command -v eza)" ]; then
 fi
 
 # fzf, fuzzy finder
-if [ -x "$(command -v fzf)" ]; then 
+if [ -x "$(command -v fzf)" ]; then
   source <(fzf --zsh)
 
   # Set fzf theme to dracula and show file previews
@@ -78,13 +72,13 @@ if [ -x "$(command -v fzf)" ]; then
 fi
 
 # QR Code Generator
-if [ -x "$(command -v qrencode)" ]; then 
+if [ -x "$(command -v qrencode)" ]; then
   alias qr='qrencode -m 2 -t utf8 <<< "$1"'
 fi
 
 # Update Aliases for Linux and macOS
 if [[ `uname` == "Linux" ]]; then
-  if [ -x "$(command -v brew)" ]; then 
+  if [ -x "$(command -v brew)" ]; then
     alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && brew update && brew upgrade && brew autoremove && brew doctor"
   else
     alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y"
@@ -99,8 +93,3 @@ fi
 if [ -f ~/.zshrc_private ]; then
   source ~/.zshrc_private
 fi
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/Nate/.lmstudio/bin"
-# End of LM Studio CLI section
-

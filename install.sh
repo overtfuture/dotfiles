@@ -18,6 +18,7 @@ warn() { echo -e "  ${YELLOW}⚠ ${1}${NC}"; }
 error() { echo -e "  ${RED}✗ ${1}${NC}"; }
 header() { echo -e "\n${BOLD}${1}${NC}"; }
 
+is_linux() { [[ "$(uname)" == "Linux" ]]; }
 is_macos() { [[ "$(uname)" == "Darwin" ]]; }
 
 # Create a symlink, backing up any existing non-symlink file first.
@@ -103,15 +104,23 @@ setup_zsh_tooling() {
     return
   fi
 
-  mkdir -p "$HOME/.zsh-tooling"
-
   if [[ "$selection" == "a" ]]; then
     local dst="$HOME/.zsh-tooling"
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$DOTFILE_DIR/.zsh-tooling" ]; then
       info "Already linked: $dst"
     else
-      [ -L "$dst" ] && rm "$dst"
+      if [ -L "$dst" ]; then
+        rm "$dst"
+        if [ $? -ne 0 ]; then
+          error "Failed to remove existing symlink at $dst"
+          return 1
+        fi
+      fi
       ln -s "$DOTFILE_DIR/.zsh-tooling" "$dst"
+      if [ $? -ne 0 ]; then
+        error "Failed to create symlink at $dst"
+        return 1
+      fi
       success "Linked: $dst → $DOTFILE_DIR/.zsh-tooling"
     fi
     return
@@ -150,7 +159,6 @@ setup_dependencies() {
     warn "Dependency setup is macOS-only — skipping"
     return
   fi
-  "$DOTFILE_DIR/.bin/macos/setup-dependencies"
 }
 
 setup_gitconfig() {
@@ -199,8 +207,8 @@ main() {
     case "$choice" in
     1)
       setup_symlinks
-      setup_dependencies
       setup_gitconfig
+      setup_dependencies
       setup_ssh
       echo -e "\n${GREEN}${BOLD}Done! Run 'exec zsh' to reload your shell.${NC}\n"
       break

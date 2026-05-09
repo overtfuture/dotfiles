@@ -22,13 +22,16 @@ fi
 export PATH=$PATH:/usr/local/bin
 
 # SSH
-if [[ $(uname) == "Linux" ]]; then
-  eval "$(ssh-agent -s)"
-  ssh-add ~/.ssh/id_ed25519
-fi
-
+# Check for SSH agent and add key if not running in remote session (SSH_CONNECTION is empty)
 if [ -z "$SSH_CONNECTION" ]; then
-  export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+  # Start SSH agent and add key if not running in remote session (SSH_CONNECTION is empty)
+  if [[ $(uname) == "Linux" ]]; then
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+  # For macos, use 1Password's agent
+  else
+    export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+  fi
 fi
 
 # Git commit signing: use 1Password locally, dedicated key in remote sessions
