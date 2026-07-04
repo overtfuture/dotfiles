@@ -90,7 +90,7 @@ if [[ `uname` == "Linux" ]]; then
     alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y"
   fi
 elif [[ `uname` == "Darwin" ]]; then
-  alias update="brew update && brew upgrade && brew autoremove && brew doctor"
+  alias update="brew update && brew upgrade -y && brew autoremove && brew doctor"
 else
   echo 'Unknown OS!'
 fi
