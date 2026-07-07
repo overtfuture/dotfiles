@@ -12,3 +12,8 @@ fi
 if [ -x "$(command -v telepresence)" ]; then
   source <(telepresence completion zsh)
 fi
+
+# fluxcd
+if [ -x "$(command -v flux)" ]; then
+  source <(flux completion zsh)
+fi
