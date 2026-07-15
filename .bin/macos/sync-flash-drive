@@ -1,30 +1,68 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Function to rsync directories
-rsync_directories() {
-	source_path=$1
-	destination_path=$2
+set -euo pipefail
+umask 077
 
-	mkdir -p "$destination_path" && rsync -avz --exclude-from="$HOME/.gitignore_global" --progress --delete "$source_path" "$destination_path"
+if [[ "$(uname -s)" != "Darwin" ]]; then
+	echo "sync-flash-drive requires macOS." >&2
+	exit 1
+fi
+
+dry_run=false
+if [[ "${1:-}" == "--dry-run" ]]; then
+	dry_run=true
+	shift
+fi
+if [[ $# -ne 0 ]]; then
+	echo "usage: $(basename "$0") [--dry-run]" >&2
+	exit 2
+fi
+
+command -v rsync >/dev/null 2>&1 || {
+	echo "Missing dependency: rsync" >&2
+	exit 1
 }
 
-# Check if the volume "Secure" is mounted
-if mount | grep -q "/Volumes/Secure"; then
-	echo "USB flash drive 'Secure' is mounted."
-	echo "Syncing files..."
+is_mounted() {
+	mount | awk -v path="$1" '$0 ~ " on " path " \\(" { found = 1 } END { exit !found }'
+}
 
-	# Sync Development folder to flash drive
-	rsync_directories "$HOME/Developer/projects/github/overtfuture" "/Volumes/Secure/Nate/Developer/projects/github/overtfuture"
-	rsync_directories "$HOME/Developer/projects/github/studioember" "/Volumes/Secure/Nate/Developer/projects/github/studioember"
-	rsync_directories "$HOME/Developer/projects/github/eventsheet" "/Volumes/Secure/Nate/Developer/projects/github/eventsheet"
+rsync_directories() {
+	local source_path="$1"
+	local destination_path="$2"
+	local args=(-a --human-readable --progress --delete)
 
-	# Sync $HOME folders to flash drive
-	rsync_directories "$HOME/.ssh/" "/Volumes/Secure/Nate/.ssh"
-
-	# Sync Travel folder to flash drive
-	if mount | grep -q "/Volumes/Personal-Drive"; then
-		rsync_directories "/Volumes/Personal-Drive/Travel" "/Volumes/Secure/Travel"
+	if [[ ! -d "$source_path" ]]; then
+		echo "Skipping missing source: $source_path" >&2
+		return
 	fi
-else
-	echo "Volume 'Secure' is not mounted."
+	if [[ "$dry_run" == true ]]; then
+		args+=(--dry-run)
+	fi
+	if [[ -f "$HOME/.gitignore_global" ]]; then
+		args+=(--exclude-from="$HOME/.gitignore_global")
+	fi
+
+	mkdir -p "$destination_path"
+	rsync "${args[@]}" "${source_path%/}/" "${destination_path%/}/"
+}
+
+if ! is_mounted /Volumes/Secure; then
+	echo "Volume 'Secure' is not mounted." >&2
+	exit 1
+fi
+
+if [[ "$dry_run" == false ]]; then
+	echo "This mirror sync deletes destination files that are absent from the source."
+	read -rp "Continue? [y/N]: " confirm
+	[[ "$confirm" =~ ^[Yy]$ ]] || { echo "Cancelled."; exit 0; }
+fi
+
+rsync_directories "$HOME/Developer/projects/github/overtfuture" "/Volumes/Secure/Nate/Developer/projects/github/overtfuture"
+rsync_directories "$HOME/Developer/projects/github/studioember" "/Volumes/Secure/Nate/Developer/projects/github/studioember"
+rsync_directories "$HOME/Developer/projects/github/eventsheet" "/Volumes/Secure/Nate/Developer/projects/github/eventsheet"
+rsync_directories "$HOME/.ssh" "/Volumes/Secure/Nate/.ssh"
+
+if is_mounted /Volumes/Personal-Drive; then
+	rsync_directories "/Volumes/Personal-Drive/Travel" "/Volumes/Secure/Travel"
 fi

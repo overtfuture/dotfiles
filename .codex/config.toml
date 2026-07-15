@@ -1,0 +1,28 @@
+# Shared Codex defaults for macOS and GNU/Linux.
+# Keep model selection account-driven by omitting an explicit `model` value.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "high"
+web_search = "live"
+
+project_doc_fallback_filenames = [
+  "CLAUDE.md",
+  "CONTRIBUTING.md",
+  "README.md",
+]
+
+project_doc_max_bytes = 65536
+
+[sandbox_workspace_write]
+network_access = true
+
+[history]
+persistence = "save-all"
+max_bytes = 104857600
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "GITHUB_PAT_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 120

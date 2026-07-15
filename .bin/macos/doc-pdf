@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: docx2pdf file.docx [another.docx ...]
+command -v pandoc >/dev/null 2>&1 || {
+	echo "Missing dependency: pandoc" >&2
+	exit 1
+}
+
+if [[ $# -eq 0 ]]; then
+	echo "usage: $(basename "$0") <document> [document ...]" >&2
+	exit 2
+fi
+
 for f in "$@"; do
 	[[ -f "$f" ]] || {
 		echo "Not a file: $f" >&2

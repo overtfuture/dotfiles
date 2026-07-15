@@ -1,11 +1,13 @@
 # Kubernetes
-source <(kubectl completion zsh)
+if command -v kubectl >/dev/null 2>&1; then
+  source <(kubectl completion zsh)
+fi
 # krew
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 # kubie
-if [ -f $HOME/.kube/kubie.zsh ]; then
-  source $HOME/.kube/kubie.zsh
+if [ -f "$HOME/.kube/kubie.zsh" ]; then
+  source "$HOME/.kube/kubie.zsh"
 fi
 
 # telepresence

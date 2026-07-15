@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 usage() {
   cat <<'USAGE'
@@ -25,14 +26,17 @@ out=".env"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --item|-i)
+      [[ $# -ge 2 && -n "$2" ]] || { echo "Missing value for $1" >&2; exit 2; }
       item="${2:-}"
       shift 2
       ;;
     --vault|-v)
+      [[ $# -ge 2 && -n "$2" ]] || { echo "Missing value for $1" >&2; exit 2; }
       vault="${2:-}"
       shift 2
       ;;
     --out|-o)
+      [[ $# -ge 2 && -n "$2" ]] || { echo "Missing value for $1" >&2; exit 2; }
       out="${2:-}"
       shift 2
       ;;
@@ -69,7 +73,13 @@ if [[ -n "$vault" ]]; then
   op_args+=(--vault "$vault")
 fi
 
-tmp="$(mktemp "${TMPDIR:-/tmp}/1pass-env.XXXXXX")"
+out_dir="$(dirname "$out")"
+if [[ ! -d "$out_dir" || -d "$out" ]]; then
+  echo "Output directory does not exist or output is a directory: $out" >&2
+  exit 2
+fi
+
+tmp="$(mktemp "$out_dir/.1pass-env.XXXXXX")"
 trap 'rm -f "$tmp"' EXIT
 
 op "${op_args[@]}" |
@@ -80,18 +90,21 @@ op "${op_args[@]}" |
       | gsub("^_+|_+$"; "")
       | if test("^[0-9]") then "OP_" + . else . end;
 
-    .fields
-    | map(select(.value != null and (.value | tostring | length > 0)))
-    | map({
+    [.fields[]
+    | select(.value != null and (.value | tostring | length > 0))
+    | {
         key: ((.label // .id) | tostring | env_key),
         value: (.value | tostring)
-      })
-    | unique_by(.key)
-    | sort_by(.key)
-    | .[]
+      }]
+    | if length != (unique_by(.key) | length)
+      then error("duplicate environment keys after normalization")
+      else .
+      end
+    | sort_by(.key)[]
     | "\(.key)=\(.value | @sh)"
   ' > "$tmp"
 
+chmod 600 "$tmp"
 mv "$tmp" "$out"
 trap - EXIT
 

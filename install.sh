@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -12,19 +12,37 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-info() { echo -e "  ${CYAN}${1}${NC}"; }
-success() { echo -e "  ${GREEN}✓ ${1}${NC}"; }
-warn() { echo -e "  ${YELLOW}⚠ ${1}${NC}"; }
-error() { echo -e "  ${RED}✗ ${1}${NC}"; }
-header() { echo -e "\n${BOLD}${1}${NC}"; }
+info() { printf '  %b%s%b\n' "$CYAN" "$1" "$NC"; }
+success() { printf '  %b✓ %s%b\n' "$GREEN" "$1" "$NC"; }
+warn() { printf '  %b⚠ %s%b\n' "$YELLOW" "$1" "$NC"; }
+error() { printf '  %b✗ %s%b\n' "$RED" "$1" "$NC" >&2; }
+header() { printf '\n%b%s%b\n' "$BOLD" "$1" "$NC"; }
 
-is_macos() { [[ "$(uname)" == "Darwin" ]]; }
+is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
 
-# Create a symlink, backing up any existing non-symlink file first.
+is_debian() {
+  [[ "$(uname -s)" == "Linux" ]] || return 1
+  [[ -r /etc/os-release ]] || return 1
+  grep -Eq '^ID="?debian"?$|^ID_LIKE="?([^" ]+ )*debian( [^" ]+)*"?$' /etc/os-release
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || {
+    error "Missing required command: $1"
+    return 1
+  }
+}
+
+# Create a symlink, backing up any existing destination first.
 # If a correct symlink already exists, skip it.
 symlink() {
   local src="$1"
   local dst="$2"
+
+  if [[ ! -e "$src" && ! -L "$src" ]]; then
+    error "Link source does not exist: $src"
+    return 1
+  fi
 
   # Already pointing to the right place — nothing to do
   if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
@@ -32,16 +50,12 @@ symlink() {
     return
   fi
 
-  # Existing real file/directory — back it up
-  if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-    local bak="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+  # Back up an existing file, directory, or incorrect/broken symlink.
+  if [[ -e "$dst" || -L "$dst" ]]; then
+    local bak
+    bak="${dst}.bak.$(date +%Y%m%d%H%M%S).$$"
     mv "$dst" "$bak"
     warn "Backed up: $dst → $bak"
-  fi
-
-  # Stale or wrong symlink — remove it
-  if [ -L "$dst" ]; then
-    rm "$dst"
   fi
 
   # Ensure parent directory exists
@@ -49,6 +63,23 @@ symlink() {
 
   ln -s "$src" "$dst"
   success "Linked: $dst → $src"
+}
+
+ensure_directory() {
+  local dir="$1"
+
+  if [[ -d "$dir" && ! -L "$dir" ]]; then
+    return
+  fi
+
+  if [[ -e "$dir" || -L "$dir" ]]; then
+    local bak
+    bak="${dir}.bak.$(date +%Y%m%d%H%M%S).$$"
+    mv "$dir" "$bak"
+    warn "Backed up: $dir → $bak"
+  fi
+
+  mkdir -p "$dir"
 }
 
 # ─── Sections ────────────────────────────────────────────────────────────────
@@ -63,12 +94,21 @@ setup_symlinks() {
   symlink "$DOTFILE_DIR/.zshrc_private" "$HOME/.zshrc_private"
   symlink "$DOTFILE_DIR/.bin" "$HOME/.bin"
 
+  setup_codex
+
   mkdir -p "$HOME/.config"
   symlink "$DOTFILE_DIR/.config/starship" "$HOME/.config/starship"
   symlink "$DOTFILE_DIR/.config/presenterm" "$HOME/.config/presenterm"
 
   setup_zsh_tooling
   setup_neovim
+}
+
+setup_codex() {
+  header "Codex configuration"
+  ensure_directory "$HOME/.codex"
+  symlink "$DOTFILE_DIR/.codex/config.toml" "$HOME/.codex/config.toml"
+  symlink "$DOTFILE_DIR/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
 }
 
 setup_zsh_tooling() {
@@ -103,21 +143,18 @@ setup_zsh_tooling() {
     return
   fi
 
-  mkdir -p "$HOME/.zsh-tooling"
-
   if [[ "$selection" == "a" ]]; then
-    local dst="$HOME/.zsh-tooling"
-    if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$DOTFILE_DIR/.zsh-tooling" ]; then
-      info "Already linked: $dst"
-    else
-      [ -L "$dst" ] && rm "$dst"
-      ln -s "$DOTFILE_DIR/.zsh-tooling" "$dst"
-      success "Linked: $dst → $DOTFILE_DIR/.zsh-tooling"
-    fi
+    symlink "$DOTFILE_DIR/.zsh-tooling" "$HOME/.zsh-tooling"
     return
   fi
 
+  mkdir -p "$HOME/.zsh-tooling"
+
   for num in $selection; do
+    if [[ ! "$num" =~ ^[0-9]+$ ]]; then
+      warn "Invalid selection: $num"
+      continue
+    fi
     local idx=$((num - 1))
     if [ "$idx" -ge 0 ] && [ "$idx" -lt "${#tools[@]}" ]; then
       local tool="${tools[$idx]}"
@@ -131,13 +168,14 @@ setup_zsh_tooling() {
 setup_neovim() {
   header "Neovim config"
   local nvim_dir="$HOME/.config/nvim"
-  if [ -d "$nvim_dir" ]; then
+  if [[ -e "$nvim_dir" || -L "$nvim_dir" ]]; then
     info "Neovim config already exists at $nvim_dir — skipping"
     return
   fi
   read -r -p "  Clone lazyvim config to ~/.config/nvim? [y/N]: " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
-    git clone https://github.com/overtfuture/lazyvim.git "$nvim_dir"
+    require_command git
+    git clone --depth 1 https://github.com/overtfuture/lazyvim.git "$nvim_dir"
     success "Neovim config cloned"
   else
     warn "Skipping Neovim config"
@@ -146,15 +184,18 @@ setup_neovim() {
 
 setup_dependencies() {
   header "Installing dependencies"
-  if ! is_macos; then
-    warn "Dependency setup is macOS-only — skipping"
-    return
+  if is_macos; then
+    "$DOTFILE_DIR/.bin/macos/setup-dependencies"
+  elif is_debian; then
+    "$DOTFILE_DIR/.bin/debian/setup-dependencies"
+  else
+    warn "Unsupported platform. Dependency setup supports macOS and Debian-based Linux."
   fi
-  "$DOTFILE_DIR/.bin/macos/setup-dependencies"
 }
 
 setup_gitconfig() {
   header "Git configuration"
+  require_command git
   "$DOTFILE_DIR/.bin/setup-gitconfig"
 }
 
@@ -172,8 +213,50 @@ setup_ssh() {
     return
   fi
 
-  sudo cp "$DOTFILE_DIR/sshd_conf.d/001-ssh-macos-security.conf" /etc/ssh/sshd_config.d/
-  sudo cp "$DOTFILE_DIR/sshd_conf.d/100-macos.conf" /etc/ssh/sshd_config.d/
+  require_command sudo
+  if [[ ! -x /usr/sbin/sshd ]]; then
+    error "Cannot validate SSH configuration: /usr/sbin/sshd is missing"
+    return 1
+  fi
+
+  local security_target=/etc/ssh/sshd_config.d/001-ssh-macos-security.conf
+  local macos_target=/etc/ssh/sshd_config.d/100-macos.conf
+  local security_backup="${security_target}.dotfiles-backup.$$"
+  local macos_backup="${macos_target}.dotfiles-backup.$$"
+  local had_security=false
+  local had_macos=false
+
+  sudo mkdir -p /etc/ssh/sshd_config.d
+  if sudo test -e "$security_target"; then
+    sudo cp -p "$security_target" "$security_backup"
+    had_security=true
+  fi
+  if sudo test -e "$macos_target"; then
+    sudo cp -p "$macos_target" "$macos_backup"
+    had_macos=true
+  fi
+
+  if ! sudo install -o root -g wheel -m 0644 \
+      "$DOTFILE_DIR/sshd_conf.d/001-ssh-macos-security.conf" "$security_target" ||
+    ! sudo install -o root -g wheel -m 0644 \
+      "$DOTFILE_DIR/sshd_conf.d/100-macos.conf" "$macos_target" ||
+    ! sudo /usr/sbin/sshd -t; then
+    if [[ "$had_security" == true ]]; then
+      sudo mv "$security_backup" "$security_target"
+    else
+      sudo rm -f "$security_target"
+    fi
+    if [[ "$had_macos" == true ]]; then
+      sudo mv "$macos_backup" "$macos_target"
+    else
+      sudo rm -f "$macos_target"
+    fi
+    error "SSH configuration was invalid; previous files were restored"
+    return 1
+  fi
+
+  [[ "$had_security" == false ]] || sudo rm -f "$security_backup"
+  [[ "$had_macos" == false ]] || sudo rm -f "$macos_backup"
   success "SSH configs deployed"
   warn "Restart sshd to apply: sudo launchctl stop com.openssh.sshd && sudo launchctl start com.openssh.sshd"
 }
@@ -181,14 +264,15 @@ setup_ssh() {
 # ─── Menu ─────────────────────────────────────────────────────────────────────
 
 print_menu() {
-  echo -e "\n${BOLD}Dotfiles Setup${NC}"
+  printf '\n%bDotfiles Setup%b\n' "$BOLD" "$NC"
   echo "────────────────"
   echo "  1) Full setup      (symlinks + dependencies + gitconfig + SSH)"
   echo "  2) Symlinks only"
-  echo "  3) Dependencies only"
-  echo "  4) Git config only"
-  echo "  5) SSH config only"
-  echo "  6) Exit"
+  echo "  3) Codex config only"
+  echo "  4) Dependencies only"
+  echo "  5) Git config only"
+  echo "  6) SSH config only (macOS)"
+  echo "  7) Exit"
   echo
 }
 
@@ -202,14 +286,15 @@ main() {
       setup_dependencies
       setup_gitconfig
       setup_ssh
-      echo -e "\n${GREEN}${BOLD}Done! Run 'exec zsh' to reload your shell.${NC}\n"
+      printf '\n%b%bDone! Run '\''exec zsh'\'' to reload your shell.%b\n\n' "$GREEN" "$BOLD" "$NC"
       break
       ;;
     2) setup_symlinks ;;
-    3) setup_dependencies ;;
-    4) setup_gitconfig ;;
-    5) setup_ssh ;;
-    6)
+    3) setup_codex ;;
+    4) setup_dependencies ;;
+    5) setup_gitconfig ;;
+    6) setup_ssh ;;
+    7)
       echo
       exit 0
       ;;
@@ -218,4 +303,6 @@ main() {
   done
 }
 
-main
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

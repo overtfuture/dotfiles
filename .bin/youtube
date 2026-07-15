@@ -13,14 +13,13 @@ need_cmd() {
 need_cmd yt-dlp
 need_cmd ffmpeg
 
-if [[ $# -lt 1 ]]; then
+if [[ $# -ne 1 ]]; then
 	err "usage: $(basename "$0") <video-url>"
 fi
 
 URL="$1"
 
 yt-dlp \
-	"$URL" \
 	-f "bv*+ba/b" \
 	--merge-output-format mp4 \
 	--embed-metadata \
@@ -34,4 +33,5 @@ yt-dlp \
 	--write-thumbnail \
 	--restrict-filenames \
 	--no-mtime \
-	-o "%(title)s.%(ext)s"
+	-o "%(title)s.%(ext)s" \
+	-- "$URL"

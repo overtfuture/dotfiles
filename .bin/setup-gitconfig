@@ -1,13 +1,29 @@
 #!/usr/bin/env bash
-#
-# This script sets up your global gitconfig on macOS using your SSH key for commit signing.
-# It will prompt you to enter your name and email, then use your SSH key (id_ed25519 or id_rsa)
-# for signing commits. Make sure you have at least one SSH key in ~/.ssh.
-#
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=.bin/lib/github-keys.sh
+source "$SCRIPT_DIR/lib/github-keys.sh"
+
+command -v git >/dev/null 2>&1 || {
+	echo "Missing dependency: git" >&2
+	exit 1
+}
 
 # Prompt for user name and email
 read -rp "Enter your name: " user_name
 read -rp "Enter your email: " user_email
+
+if [[ -z "$user_name" || "$user_name" =~ [[:cntrl:]] ]]; then
+	echo "Name must not be empty or contain control characters." >&2
+	exit 2
+fi
+
+if [[ ! "$user_email" =~ ^[^[:space:]@]+@[^[:space:]@]+$ ]]; then
+	echo "Enter a valid email address." >&2
+	exit 2
+fi
 
 # Configure git with the provided details and SSH key for signing
 git config --global user.name "$user_name"
@@ -18,20 +34,15 @@ git config --global gpg.format ssh
 
 # Allowed signer keys
 echo "When using remote SSH and forwarding a local SSH agent, the local SSH key needs to be allowed for signing on the remote host"
-echo "This will curl your existing Github public keys to allow for git signing"
-read -p "Would you like to curl your Github public keys as allowed git commit signing keys? [y/N]: " setup_signing_keys
+echo "This can fetch your existing GitHub public keys to allow Git signature verification"
+read -rp "Would you like to fetch your GitHub public keys as allowed Git commit signing keys? [y/N]: " setup_signing_keys
 if [[ "$setup_signing_keys" =~ ^[Yy]$ ]]; then
-	read -p "Enter your GitHub username: " github_username
-	if [ ! -f "$HOME/.ssh/allowed_signers" ]; then
-		mkdir -p "$HOME/.ssh"
-		curl "https://github.com/${github_username}.keys" >"$HOME/.ssh/allowed_signers"
-		echo "Authorized Signing Keys Added"
-		cat "$HOME/.ssh/allowed_signers"
-		echo "Adding gpg signing with SSH keys"
-		git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
-		git config --global gpg.ssh.allowedSignersFile '$HOME/.ssh/allowed_signers'
-		git config --global commit.gpgsign true
-	fi
+	read -rp "Enter your GitHub username: " github_username
+	fetch_github_keys "$github_username" "$HOME/.ssh/allowed_signers" "$user_email"
+	echo "Allowed signing keys updated."
+	git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
+	git config --global gpg.ssh.allowedSignersFile "$HOME/.ssh/allowed_signers"
+	git config --global commit.gpgsign true
 fi
 
 # Sane defaults
@@ -54,12 +65,13 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 if [ -f "$HOME/.gitignore_global" ]; then
-	git config --global core.excludesfile ~/.gitignore_global
+	git config --global core.excludesfile "$HOME/.gitignore_global"
 fi
 
 echo "Git configuration updated:"
 echo "  user.name = $user_name"
 echo "  user.email = $user_email"
-echo "  Signing with SSH public keys from $HOME/.ssh/allowed_signers"
+if git config --global --get commit.gpgsign >/dev/null 2>&1; then
+	echo "  SSH commit signing = enabled"
+fi
 echo "------------------------------------"
-cat ~/.gitconfig

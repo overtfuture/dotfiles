@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "$(uname -s)" != "Linux" ]] || [[ ! -r /etc/os-release ]] ||
+  ! grep -Eq '^ID="?debian"?$|^ID_LIKE="?([^" ]+ )*debian( [^" ]+)*"?$' /etc/os-release; then
+  echo "This dependency installer only supports Debian-based Linux." >&2
+  exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=.bin/lib/github-keys.sh
+source "$SCRIPT_DIR/../lib/github-keys.sh"
+
+if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+  sudo_cmd=()
+else
+  command -v sudo >/dev/null 2>&1 || {
+    echo "sudo is required to install Debian packages." >&2
+    exit 1
+  }
+  sudo_cmd=(sudo)
+fi
+
+command -v apt-get >/dev/null 2>&1 || {
+  echo "Missing dependency: apt-get" >&2
+  exit 1
+}
+
+packages=(
+  bash-completion bat bsdextrautils build-essential ca-certificates curl ffmpeg fzf git jq
+  neovim openssh-client pandoc python3-pygments qrencode rsync shellcheck tmux
+  unzip zsh zsh-autosuggestions zsh-syntax-highlighting
+)
+
+"${sudo_cmd[@]}" apt-get update
+
+# These packages are present in newer Debian releases but not every supported one.
+for package in eza gh golang-go starship; do
+  if apt-cache show "$package" >/dev/null 2>&1; then
+    packages+=("$package")
+  fi
+done
+
+"${sudo_cmd[@]}" apt-get install --no-install-recommends "${packages[@]}"
+
+# Debian historically installed bat as batcat. Provide the name used by this repo
+# without replacing an existing user-managed command.
+if ! command -v bat >/dev/null 2>&1 && command -v batcat >/dev/null 2>&1; then
+  mkdir -p "$HOME/.local/bin"
+  if [[ ! -e "$HOME/.local/bin/bat" && ! -L "$HOME/.local/bin/bat" ]]; then
+    ln -s "$(command -v batcat)" "$HOME/.local/bin/bat"
+    echo "Linked ~/.local/bin/bat to $(command -v batcat)."
+  fi
+fi
+
+read -rp "Would you like to replace authorized_keys with your GitHub public keys? [y/N]: " setup_keys
+if [[ "$setup_keys" =~ ^[Yy]$ ]]; then
+  read -rp "Enter your GitHub username: " github_username
+  fetch_github_keys "$github_username" "$HOME/.ssh/authorized_keys"
+  echo "Authorized keys updated with mode 0600."
+fi
+
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+  git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
+  echo "Oh My Zsh installed."
+fi
+
+echo "Dependency setup complete. Run 'exec zsh' to reload your shell."

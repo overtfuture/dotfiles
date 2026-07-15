@@ -1,23 +1,9 @@
 # GoLang
 if [ -x "$(command -v go)" ]; then
-  # OS Detection
-  if [[ `uname` == "Linux" ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    export GOROOT=/home/linuxbrew/.linuxbrew/opt/go/libexec
-  elif [[ `uname` == "Darwin" ]]; then
-    export GOROOT=/opt/homebrew/opt/go/libexec
-  else
-    echo 'Unknown OS!'
-  fi
-
   # Path Setup
-  export GOPATH=$HOME/Developer/libraries/go
-  export GOBIN=$GOPATH/bin
-  export PATH=$PATH:$GOPATH
-  export PATH=$PATH:$GOROOT/bin
-  export PATH=$GOBIN:$PATH
-
-  export GOPROXY=direct
+  export GOPATH="${GOPATH:-$HOME/Developer/libraries/go}"
+  export GOBIN="${GOBIN:-$GOPATH/bin}"
+  export PATH="$GOBIN:$PATH"
 
   # GoLang Private Modules
   export GOPRIVATE=github.com/studioember/*

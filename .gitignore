@@ -1,2 +1,9 @@
 .DS_Store
 .bin/macos/youtube-dl
+.zshrc_secrets
+.env
+.env.*
+!.env.example
+.codex/*
+!.codex/config.toml
+!.codex/AGENTS.md

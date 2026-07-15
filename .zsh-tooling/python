@@ -1,4 +1,4 @@
 # Python - Rye Management
 if [ -x "$(command -v rye)" ]; then
-    source "$HOME/.rye/env"
+    [[ -r "$HOME/.rye/env" ]] && source "$HOME/.rye/env"
 fi
