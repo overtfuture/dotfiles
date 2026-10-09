@@ -7,5 +7,5 @@
 .env.*
 !.env.example
 .codex/*
-!.codex/config.toml
+!.codex/config.example.toml
 !.codex/AGENTS.md

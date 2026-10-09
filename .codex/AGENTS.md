@@ -25,3 +25,5 @@
 ## Tools
 
 - Use `vi` as the preferred terminal editor when an editor must be selected.
+
+- When `rtk` is installed, prefix shell commands with `rtk`. Use `rtk proxy <command>` for commands without a dedicated wrapper. If `rtk` is unavailable, run the command directly.

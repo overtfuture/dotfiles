@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DOTFILE_DIR="$(cd "$(dirname "$0")" && pwd)"
+DOTFILE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors
 RED='\033[0;31m'
@@ -107,8 +107,46 @@ setup_symlinks() {
 setup_codex() {
   header "Codex configuration"
   ensure_directory "$HOME/.codex"
-  symlink "$DOTFILE_DIR/.codex/config.toml" "$HOME/.codex/config.toml"
+  install_codex_config
   symlink "$DOTFILE_DIR/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
+}
+
+install_codex_config() {
+  local dst="$HOME/.codex/config.toml"
+  local src="$DOTFILE_DIR/.codex/config.example.toml"
+  local temporary backup=''
+
+  if [[ -f "$dst" ]]; then
+    if [[ ! -L "$dst" ]]; then
+      info "Keeping local Codex configuration: $dst"
+      return
+    fi
+    # Detach an old symlink without losing machine-specific settings.
+    src="$dst"
+  elif [[ -e "$dst" ]]; then
+    error "Codex configuration is not a regular file: $dst"
+    return 1
+  fi
+
+  temporary="$(mktemp "$HOME/.codex/.config.toml.XXXXXX")"
+  if ! cp -L "$src" "$temporary" || ! chmod 600 "$temporary"; then
+    rm -f "$temporary"
+    return 1
+  fi
+  if [[ -L "$dst" ]]; then
+    backup="$(mktemp "${dst}.bak.$(date +%Y%m%d%H%M%S).XXXXXX")"
+    if ! mv "$dst" "$backup"; then
+      rm -f "$temporary" "$backup"
+      return 1
+    fi
+    warn "Backed up Codex config symlink: $dst → $backup"
+  fi
+  if ! mv "$temporary" "$dst"; then
+    [[ -z "$backup" ]] || mv "$backup" "$dst"
+    rm -f "$temporary"
+    return 1
+  fi
+  success "Installed local Codex configuration: $dst"
 }
 
 setup_zsh_tooling() {
