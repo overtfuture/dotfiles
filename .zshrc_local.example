@@ -1,0 +1,3 @@
+# Copy to ~/.zshrc_local. Keep machine-specific paths and customization here.
+# Application installers may append PATH entries to this file.
+# export PATH="$HOME/.bun/bin:$PATH"

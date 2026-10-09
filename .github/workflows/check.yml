@@ -1,0 +1,27 @@
+name: Shell checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install check tools
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            brew install shellcheck zsh
+          else
+            sudo apt-get update
+            sudo apt-get install -y shellcheck zsh
+          fi
+      - run: bash tests/check.sh
+      - name: Check root APT update behavior with mocked package managers
+        if: runner.os == 'Linux'
+        run: sudo bash tests/update.sh

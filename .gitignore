@@ -1,6 +1,8 @@
 .DS_Store
 .bin/macos/youtube-dl
 .zshrc_secrets
+.zshrc_local
+.zprofile_local
 .env
 .env.*
 !.env.example

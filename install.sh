@@ -143,12 +143,15 @@ setup_zsh_tooling() {
     return
   fi
 
+  # Never follow a legacy directory symlink back into the source repository.
+  ensure_directory "$HOME/.zsh-tooling"
+
   if [[ "$selection" == "a" ]]; then
-    symlink "$DOTFILE_DIR/.zsh-tooling" "$HOME/.zsh-tooling"
+    for tool in "${tools[@]}"; do
+      symlink "$DOTFILE_DIR/.zsh-tooling/$tool" "$HOME/.zsh-tooling/$tool"
+    done
     return
   fi
-
-  mkdir -p "$HOME/.zsh-tooling"
 
   for num in $selection; do
     if [[ ! "$num" =~ ^[0-9]+$ ]]; then
