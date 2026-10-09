@@ -14,7 +14,7 @@ cd dotfiles
 
 The script presents a menu to run a full setup or individual steps:
 
-- Symlinks shared shell, tool, application, and Codex configuration while backing up existing files.
+- Symlinks shared shell, tool, application, and Codex instructions while backing up existing files, and seeds a local Codex config when needed.
 - Dependencies use Homebrew on macOS and native `apt-get` packages on Debian, Ubuntu, and other Debian derivatives.
 - Git configuration optionally builds a correctly formatted SSH `allowed_signers` file from your public GitHub keys.
 - SSH server configuration is macOS-only and is validated with `sshd -t` before the script reports success.
@@ -79,11 +79,13 @@ already installed in a real directory.
 
 ## Codex
 
-The shared Codex configuration installs these links while leaving credentials, sessions, logs, and other generated state local to each machine:
+Codex configuration stays local because the app writes machine-specific settings
+into it. The installer copies tracked defaults only when needed and links shared
+instructions:
 
 ```text
-~/.codex/config.toml -> <dotfiles>/.codex/config.toml
-~/.codex/AGENTS.md   -> <dotfiles>/.codex/AGENTS.md
+~/.codex/config.toml   local file, seeded from .codex/config.example.toml
+~/.codex/AGENTS.md  -> <dotfiles>/.codex/AGENTS.md
 ```
 
 Run the existing installer and choose **Codex config only**:
@@ -92,7 +94,14 @@ Run the existing installer and choose **Codex config only**:
 ./install.sh
 ```
 
-Existing destination files or incorrect symlinks are backed up with a timestamp before the shared files are linked. Running the installer again with the correct links already present is safe.
+Existing regular config files are preserved unchanged. A legacy config symlink
+is backed up and replaced with a local copy of its current contents; a broken
+symlink is backed up and replaced with the example defaults. New or migrated
+config files use mode 0600. Running the installer again is safe.
+
+Only `.codex/config.example.toml` is versioned. `.codex/config.toml`, credentials,
+sessions, logs, and generated machine state are ignored. Changes to the example
+do not overwrite existing local configuration; apply desired defaults manually.
 
 The GitHub MCP server reads its bearer token from `GITHUB_PAT_TOKEN`; the token is not stored in this repository. For example, with the 1Password CLI:
 
