@@ -25,30 +25,12 @@ if [[ $(uname) == "Linux" && -n "${SSH_AUTH_SOCK:-}" && -r "$HOME/.ssh/id_ed2551
   ssh-add -l >/dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519"
 fi
 
-if [[ $(uname) == "Darwin" && -z "$SSH_CONNECTION" ]]; then
+if [[ $(uname) == "Darwin" && -z "${SSH_CONNECTION:-}" ]]; then
   export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
 fi
 
 # Git commit signing: use 1Password only for local macOS shells.
-if [[ $(uname) == "Darwin" && -z "$SSH_CONNECTION" ]]; then
-  git config --global gpg.ssh.program /Applications/1Password.app/Contents/MacOS/op-ssh-sign
-  if [ -f "$HOME/.ssh/1password_signing_key.pub" ]; then
-    git config --global user.signingkey "$HOME/.ssh/1password_signing_key.pub"
-    git config --global --unset gpg.ssh.defaultKeyCommand 2>/dev/null || true
-  else
-    git config --global --unset user.signingkey 2>/dev/null || true
-    git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
-  fi
-else
-  git config --global gpg.ssh.program ssh-keygen
-  if [ -f "$HOME/.ssh/git_signing_key.pub" ]; then
-    git config --global user.signingkey "$HOME/.ssh/git_signing_key.pub"
-    git config --global --unset gpg.ssh.defaultKeyCommand 2>/dev/null || true
-  else
-    git config --global --unset user.signingkey 2>/dev/null || true
-    git config --global gpg.ssh.defaultKeyCommand "ssh-add -L"
-  fi
-fi
+[[ -r "$HOME/.bin/lib/git-signing.zsh" ]] && source "$HOME/.bin/lib/git-signing.zsh"
 
 # Starship terminal
 if [ -x "$(command -v starship)" ]; then

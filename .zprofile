@@ -15,4 +15,9 @@ fi
 
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.
-[[ -r "$HOME/.orbstack/shell/init.zsh" ]] && source "$HOME/.orbstack/shell/init.zsh"
+if [[ -r "$HOME/.orbstack/shell/init.zsh" ]]; then
+  source "$HOME/.orbstack/shell/init.zsh"
+  DOTFILES_ORBSTACK_INITIALIZED=1
+fi
+
+[[ -r "$HOME/.zprofile_local" ]] && source "$HOME/.zprofile_local"

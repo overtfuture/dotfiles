@@ -1,6 +1,10 @@
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_DISABLE_COMPFIX=true
 
+# Keep PATH entries unique across reloads and repeated tool initialization.
+typeset -U path
+[[ "${DOTFILES_PROFILE_STARTUP:-}" == 1 ]] && zmodload zsh/zprof
+
 # Oh My Zsh does not search Linuxbrew's fzf prefix automatically.
 if command -v brew >/dev/null 2>&1; then
   if fzf_base="$(brew --prefix fzf 2>/dev/null)" && [[ -d "$fzf_base" ]]; then
@@ -58,7 +62,7 @@ alias c="clear"
 # Tooling Configurations
 TOOLING_DIR="$HOME/.zsh-tooling"
 if [[ -d "$TOOLING_DIR" ]]; then
-  for tool in "$TOOLING_DIR"/*(.N); do
+  for tool in "$TOOLING_DIR"/*(-.N); do
     source "$tool"
   done
 fi
@@ -110,12 +114,7 @@ fi
 
 # Update Aliases for Linux and macOS
 update_system() {
-  if [[ "$(uname -s)" == "Linux" ]] && command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update && sudo apt-get upgrade && sudo apt-get autoremove
-  fi
-  if command -v brew >/dev/null 2>&1; then
-    brew update && brew upgrade && brew autoremove && brew doctor
-  fi
+  "$HOME/.bin/update-system" "$@"
 }
 alias update=update_system
 
@@ -134,10 +133,16 @@ fi
 [[ -d "$HOME/.lmstudio/bin" ]] && export PATH="$PATH:$HOME/.lmstudio/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
+[[ -r "$HOME/.zshrc_local" ]] && source "$HOME/.zshrc_local"
+
 # Syntax highlighting must be sourced after all widgets and completions.
 if [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
   source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 elif command -v brew >/dev/null 2>&1 &&
   [[ -r "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
   source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+
+if [[ "${DOTFILES_PROFILE_STARTUP:-}" == 1 ]]; then
+  zprof
 fi

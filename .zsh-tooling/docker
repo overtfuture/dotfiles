@@ -1,5 +1,8 @@
 # Orbstack
 if [ -x "$(command -v orb)" ]; then
   eval "$(orbctl completion zsh)"
-  [[ -r "$HOME/.orbstack/shell/init.zsh" ]] && source "$HOME/.orbstack/shell/init.zsh"
+  if [[ -z "${DOTFILES_ORBSTACK_INITIALIZED:-}" && -r "$HOME/.orbstack/shell/init.zsh" ]]; then
+    source "$HOME/.orbstack/shell/init.zsh"
+    DOTFILES_ORBSTACK_INITIALIZED=1
+  fi
 fi

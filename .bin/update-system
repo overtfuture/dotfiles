@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+update_apt() {
+  local sudo_cmd=()
+  if [[ $EUID -ne 0 ]]; then
+    if ! command -v sudo >/dev/null 2>&1; then
+      echo 'sudo is required to update APT packages as a non-root user.' >&2
+      return 1
+    fi
+    sudo_cmd=(sudo)
+  fi
+
+  "${sudo_cmd[@]}" apt-get update || return
+  "${sudo_cmd[@]}" apt-get upgrade || return
+  "${sudo_cmd[@]}" apt-get autoremove
+}
+
+update_homebrew() {
+  brew update || return
+  brew upgrade || return
+  brew autoremove || return
+  brew doctor
+}
+
+main() {
+  local result=0 found=false
+  if [[ "$(uname -s)" == Linux ]] && command -v apt-get >/dev/null 2>&1; then
+    found=true
+    if ! update_apt; then
+      echo 'APT update failed.' >&2
+      result=1
+    fi
+  fi
+
+  if command -v brew >/dev/null 2>&1; then
+    found=true
+    if ! update_homebrew; then
+      echo 'Homebrew update or health check failed.' >&2
+      result=1
+    fi
+  fi
+
+  if [[ "$found" == false ]]; then
+    echo 'No supported package manager found (APT on Linux or Homebrew).' >&2
+    return 1
+  fi
+  return "$result"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
